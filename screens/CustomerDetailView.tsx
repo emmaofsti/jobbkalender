@@ -63,9 +63,9 @@ export default function CustomerDetailView() {
               <div className="text-xs uppercase tracking-[0.2em] text-muted">Kundeoversikt</div>
               <div className="font-display text-2xl">{customer.name}</div>
             </div>
-            <Button variant="outline" asChild>
-              <Link href="/customers">Tilbake til kunder</Link>
-            </Button>
+            <Link href="/customers">
+              <Button variant="outline">Tilbake til kunder</Button>
+            </Link>
           </CardContent>
         </Card>
 
