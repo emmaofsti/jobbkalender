@@ -65,7 +65,9 @@ export default function QuickAddBar() {
       date: selectedDate,
       startTime: parsed.startTime,
       endTime: parsed.endTime,
-      location: parsed.location
+      location: parsed.location,
+      status: "ikke begynt",
+      priority: "Medium"
     });
 
     setValue("");
