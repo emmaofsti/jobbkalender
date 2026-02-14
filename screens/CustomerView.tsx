@@ -155,7 +155,9 @@ export default function CustomerView() {
                   addTask({
                     title,
                     customerId: customer.id,
-                    date: selectedDate || todayISO()
+                    date: selectedDate || todayISO(),
+                    status: "ikke begynt",
+                    priority: "Medium"
                   })
                 }
                 onOpen={() => router.push(`/customers/${customer.id}`)}
