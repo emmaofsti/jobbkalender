@@ -1,0 +1,7 @@
+node_modules
+.next
+bilde og video system
+.env
+.env.local
+.env.*
+.DS_Store
