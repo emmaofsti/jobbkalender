@@ -7,7 +7,7 @@ import TaskCard from "@/components/TaskCard";
 
 const startHour = 8;
 const endHour = 18;
-const hourHeight = 64;
+const hourHeight = 120;
 
 function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(value, max));
@@ -25,7 +25,7 @@ function computeBlock(task: Task) {
   const heightMinutes = clamp(endMinutes, timelineStart, timelineEnd) - clamp(startMinutes, timelineStart, timelineEnd);
 
   const top = (topMinutes / 60) * hourHeight;
-  const height = Math.max((heightMinutes / 60) * hourHeight, 28);
+  const height = Math.max((heightMinutes / 60) * hourHeight, 48);
 
   return { top, height };
 }
