@@ -25,7 +25,7 @@ function computeBlock(task: Task) {
   const heightMinutes = clamp(endMinutes, timelineStart, timelineEnd) - clamp(startMinutes, timelineStart, timelineEnd);
 
   const top = (topMinutes / 60) * hourHeight;
-  const height = Math.max((heightMinutes / 60) * hourHeight, 52);
+  const height = Math.max((heightMinutes / 60) * hourHeight, 28);
 
   return { top, height };
 }
@@ -123,6 +123,7 @@ export default function Timeline({
                   onSelect={onSelect}
                   onStatusClick={onStatusClick}
                   compact
+                  fillHeight
                 />
               </div>
             );

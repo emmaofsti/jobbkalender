@@ -15,7 +15,8 @@ export default function TaskCard({
   selected,
   onSelect,
   onStatusClick,
-  compact
+  compact,
+  fillHeight
 }: {
   task: Task;
   customer: Customer | undefined;
@@ -23,6 +24,7 @@ export default function TaskCard({
   onSelect?: (id: string) => void;
   onStatusClick?: (id: string) => void;
   compact?: boolean;
+  fillHeight?: boolean;
 }) {
   const muted = task.status === "står ikke på meg";
   const blocked = Boolean(task.blockedNow);
@@ -33,31 +35,32 @@ export default function TaskCard({
         "cursor-pointer rounded-2xl border border-border bg-card p-3 shadow-sm transition",
         selected ? "ring-2 ring-accent/40" : "hover:shadow-soft",
         blocked && "border-danger/40",
-        muted && "opacity-70"
+        muted && "opacity-70",
+        fillHeight && "h-full overflow-hidden"
       )}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="space-y-2">
+        <div className="space-y-1 min-w-0">
           <div>
-            <div className="text-sm font-semibold text-text">{task.title}</div>
-            <div className="text-xs text-muted">{customer?.name ?? "Ukjent kunde"}</div>
+            <div className="text-sm font-semibold text-text truncate">{task.title}</div>
+            <div className="text-xs text-muted truncate">{customer?.name ?? "Ukjent kunde"}</div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {task.startTime ? (
               <div className="flex items-center gap-1 text-xs text-muted">
-                <Clock className="h-3.5 w-3.5" />
+                <Clock className="h-3.5 w-3.5 shrink-0" />
                 {task.startTime} {task.endTime ? `– ${task.endTime}` : null}
               </div>
             ) : null}
             {task.location ? (
               <div className="flex items-center gap-1 text-xs text-muted">
-                <MapPin className="h-3.5 w-3.5" />
+                <MapPin className="h-3.5 w-3.5 shrink-0" />
                 {task.location}
               </div>
             ) : null}
             {task.recurrence && task.recurrence !== "none" ? (
               <div className="flex items-center gap-1 text-xs text-accent">
-                <Repeat className="h-3.5 w-3.5" />
+                <Repeat className="h-3.5 w-3.5 shrink-0" />
                 {task.recurrence === "daily" && "Daglig"}
                 {task.recurrence === "weekly" && "Ukentlig"}
                 {task.recurrence === "monthly" && "Månedlig"}
@@ -65,7 +68,7 @@ export default function TaskCard({
             ) : null}
           </div>
         </div>
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex flex-col items-end gap-2 shrink-0">
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
