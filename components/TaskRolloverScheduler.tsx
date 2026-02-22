@@ -15,8 +15,15 @@ const ROLLOVER_KEY = "jobbkalender-last-rollover";
 export default function TaskRolloverScheduler() {
     const rolloverIncompleteTasks = useAppStore((state) => state.rolloverIncompleteTasks);
     const generateRecurringTasks = useAppStore((state) => state.generateRecurringTasks);
+    const deduplicateRecurringTasks = useAppStore((state) => state.deduplicateRecurringTasks);
 
     useEffect(() => {
+        // Always deduplicate on load to clean up any existing duplicates
+        const deduped = deduplicateRecurringTasks();
+        if (deduped > 0) {
+            console.log(`[TaskRollover] Removed ${deduped} duplicate recurring task(s)`);
+        }
+
         const today = new Date().toISOString().split("T")[0];
         const lastRollover = localStorage.getItem(ROLLOVER_KEY);
 
@@ -32,7 +39,7 @@ export default function TaskRolloverScheduler() {
         console.log(`[TaskRollover] Generated ${generatedCount} recurring task(s)`);
 
         localStorage.setItem(ROLLOVER_KEY, today);
-    }, [rolloverIncompleteTasks, generateRecurringTasks]);
+    }, [rolloverIncompleteTasks, generateRecurringTasks, deduplicateRecurringTasks]);
 
     // This component doesn't render anything
     return null;

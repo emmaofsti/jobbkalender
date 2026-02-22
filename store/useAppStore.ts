@@ -33,6 +33,7 @@ export type AppState = {
   copyPlanToTomorrow: (date: string) => void;
   rolloverIncompleteTasks: () => number;
   generateRecurringTasks: () => number;
+  deduplicateRecurringTasks: () => number;
 };
 
 const seed = createSeedData();
@@ -277,6 +278,42 @@ export const useAppStore = create<AppState>()(
         });
 
         return generatedCount;
+      },
+      deduplicateRecurringTasks: () => {
+        let removedCount = 0;
+
+        set((state) => {
+          const seen = new Map<string, string>(); // key -> first task id
+          const idsToRemove = new Set<string>();
+
+          // Sort by createdAt so we keep the oldest one
+          const sorted = [...state.tasks].sort(
+            (a, b) => a.createdAt.localeCompare(b.createdAt)
+          );
+
+          sorted.forEach((task) => {
+            if (!task.recurrence || task.recurrence === "none") return;
+
+            // Key: same title + same customer + same date = duplicate
+            const key = `${task.title}|${task.customerId}|${task.date}`;
+
+            if (seen.has(key)) {
+              idsToRemove.add(task.id);
+            } else {
+              seen.set(key, task.id);
+            }
+          });
+
+          removedCount = idsToRemove.size;
+
+          if (removedCount === 0) return {};
+
+          return {
+            tasks: state.tasks.filter((t) => !idsToRemove.has(t.id))
+          };
+        });
+
+        return removedCount;
       }
     }),
     {
