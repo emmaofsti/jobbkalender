@@ -12,6 +12,7 @@ import { statusOrder } from "@/store/useAppStore";
 import { addMinutesToTime } from "@/utils/time";
 import { Button } from "@/components/ui/button";
 import { Priority, Status } from "@/models/types";
+import RecurrenceSelector from "@/components/RecurrenceSelector";
 
 const priorities: Priority[] = ["Lav", "Medium", "Høy"];
 
@@ -142,6 +143,23 @@ export default function TaskDetailsPanel() {
               onChange={(event) => updateTask(task.id, { location: event.target.value || undefined })}
             />
           </div>
+        </div>
+        <div className="space-y-2">
+          <Label>Gjentagelse</Label>
+          <RecurrenceSelector
+            value={task.recurrence}
+            onChange={(recurrence) => {
+              updateTask(task.id, { recurrence });
+
+              // Immediately generate next task if setting recurrence
+              if (recurrence !== "none") {
+                setTimeout(() => {
+                  useAppStore.getState().generateRecurringTasks();
+                  console.log("[TaskDetailsPanel] Generated recurring task immediately");
+                }, 100);
+              }
+            }}
+          />
         </div>
         <div className="space-y-2">
           <Label>Notat</Label>

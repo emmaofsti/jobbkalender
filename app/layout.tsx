@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Fraunces, Manrope } from "next/font/google";
 import "./globals.css";
+import TaskRolloverScheduler from "@/components/TaskRolloverScheduler";
+import DevRolloverTrigger from "@/components/DevRolloverTrigger";
 
 const manrope = Manrope({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 const fraunces = Fraunces({
@@ -18,6 +20,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="no">
       <body className={`${manrope.className} ${fraunces.variable} min-h-screen bg-surface text-text`}>
+        <TaskRolloverScheduler />
+        <DevRolloverTrigger />
         {children}
       </body>
     </html>

@@ -4,14 +4,17 @@ import AppShell from "@/components/AppShell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import StatusBadge from "@/components/StatusBadge";
 import { useAppStore } from "@/store/useAppStore";
 import { addDaysISO, formatDayShort, getWeekDays, isToday } from "@/utils/date";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function WeekView() {
   const tasks = useAppStore((state) => state.tasks);
+  const customers = useAppStore((state) => state.customers);
   const selectedDate = useAppStore((state) => state.selectedDate);
   const setSelectedDate = useAppStore((state) => state.setSelectedDate);
+  const setEditingTaskId = useAppStore((state) => state.setEditingTaskId);
 
   const weekDays = getWeekDays(selectedDate);
 
@@ -63,17 +66,40 @@ export default function WeekView() {
                     {timed.slice(0, 4).map((task) => (
                       <div
                         key={task.id}
-                        className="flex items-center justify-between rounded-xl border border-border/70 px-3 py-2 text-xs"
+                        onClick={() => setEditingTaskId(task.id)}
+                        className="flex cursor-pointer items-center justify-between rounded-xl border border-border/70 px-3 py-2 text-xs transition-colors hover:bg-accent/5"
                       >
                         <span className="text-muted">{task.startTime}</span>
                         <span className="text-text">{task.title}</span>
+                        <StatusBadge status={task.status} />
                       </div>
                     ))}
                     {timed.length === 0 ? (
                       <div className="text-xs text-muted">Ingen tidssatte oppgaver.</div>
                     ) : null}
+                    {timed.length > 4 ? (
+                      <div className="text-xs text-muted">+{timed.length - 4} til...</div>
+                    ) : null}
                   </div>
-                  <div className="text-xs text-muted">Uten tid: {noTime.length}</div>
+                  {noTime.length > 0 ? (
+                    <div className="space-y-1">
+                      <div className="text-xs text-muted">Uten tid:</div>
+                      {noTime.slice(0, 3).map((task) => (
+                        <div
+                          key={task.id}
+                          onClick={() => setEditingTaskId(task.id)}
+                          className="cursor-pointer rounded-lg px-2 py-1 text-xs text-text transition-colors hover:bg-accent/5"
+                        >
+                          {task.title}
+                        </div>
+                      ))}
+                      {noTime.length > 3 ? (
+                        <div className="text-xs text-muted">+{noTime.length - 3} til...</div>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-muted">Uten tid: 0</div>
+                  )}
                 </CardContent>
               </Card>
             );

@@ -3,7 +3,7 @@ import { cn } from "@/utils/cn";
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "ghost" | "outline" | "subtle";
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "icon";
 };
 
 const base =
@@ -19,7 +19,8 @@ const variants: Record<NonNullable<ButtonProps["variant"]>, string> = {
 const sizes: Record<NonNullable<ButtonProps["size"]>, string> = {
   sm: "h-8 px-3 text-sm",
   md: "h-10 px-4 text-sm",
-  lg: "h-12 px-5 text-base"
+  lg: "h-12 px-5 text-base",
+  icon: "h-10 w-10 text-sm"
 };
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(

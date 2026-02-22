@@ -5,7 +5,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import { Customer, LocationNote, Priority, Status, Task, TaskUpdate } from "@/models/types";
 import { createSeedData } from "@/utils/seed";
 import { newId } from "@/utils/id";
-import { addDaysISO, todayISO } from "@/utils/date";
+import { addDaysISO, todayISO, addMonthsISO } from "@/utils/date";
 import { addMinutesToTime } from "@/utils/time";
 
 export type AppState = {
@@ -14,6 +14,7 @@ export type AppState = {
   locationNotes: LocationNote[];
   selectedDate: string;
   selectedTaskId?: string;
+  editingTaskId?: string;
   quickAddCustomerId?: string;
   lastSnapshot?: { customers: Customer[]; tasks: Task[]; timestamp: number };
   resetToSeed: () => void;
@@ -27,8 +28,11 @@ export type AppState = {
   deleteTask: (id: string) => void;
   setSelectedDate: (date: string) => void;
   setSelectedTaskId: (id?: string) => void;
+  setEditingTaskId: (id?: string) => void;
   setQuickAddCustomerId: (id?: string) => void;
   copyPlanToTomorrow: (date: string) => void;
+  rolloverIncompleteTasks: () => number;
+  generateRecurringTasks: () => number;
 };
 
 const seed = createSeedData();
@@ -47,6 +51,7 @@ export const useAppStore = create<AppState>()(
       locationNotes: [],
       selectedDate: todayISO(),
       selectedTaskId: undefined,
+      editingTaskId: undefined,
       quickAddCustomerId: undefined,
       lastSnapshot: undefined,
       resetToSeed: () =>
@@ -154,6 +159,7 @@ export const useAppStore = create<AppState>()(
         })),
       setSelectedDate: (date) => set({ selectedDate: date }),
       setSelectedTaskId: (id) => set({ selectedTaskId: id }),
+      setEditingTaskId: (id) => set({ editingTaskId: id }),
       setQuickAddCustomerId: (id) => set({ quickAddCustomerId: id }),
       copyPlanToTomorrow: (date) =>
         set((state) => {
@@ -174,7 +180,104 @@ export const useAppStore = create<AppState>()(
               };
             });
           return { tasks: [...state.tasks, ...clones], selectedDate: tomorrow };
-        })
+        }),
+      rolloverIncompleteTasks: () => {
+        const today = todayISO();
+        let rolledOverCount = 0;
+
+        set((state) => {
+          const tasksToRollover = state.tasks.filter(
+            (task) =>
+              task.date < today &&
+              task.status !== "gjort" &&
+              // Skip recurring tasks — they are handled by generateRecurringTasks
+              (!task.recurrence || task.recurrence === "none")
+          );
+
+          rolledOverCount = tasksToRollover.length;
+
+          if (rolledOverCount === 0) return {};
+
+          return {
+            tasks: state.tasks.map((task) =>
+              tasksToRollover.find((t) => t.id === task.id)
+                ? { ...task, date: today, updatedAt: new Date().toISOString() }
+                : task
+            )
+          };
+        });
+
+        return rolledOverCount;
+      },
+      generateRecurringTasks: () => {
+        const today = todayISO();
+        let generatedCount = 0;
+
+        set((state) => {
+          // Find recurring tasks dated today or in the past that need processing
+          const recurringTasks = state.tasks.filter(
+            (task) =>
+              task.recurrence &&
+              task.recurrence !== "none" &&
+              task.date <= today
+          );
+
+          const newTasks: Task[] = [];
+
+          recurringTasks.forEach((task) => {
+            let nextDate = task.date;
+
+            if (task.recurrence === "daily") {
+              // For daily tasks, the next occurrence is always tomorrow
+              nextDate = addDaysISO(today, 1);
+            } else if (task.recurrence === "weekly") {
+              nextDate = addDaysISO(task.date, 7);
+            } else if (task.recurrence === "monthly") {
+              nextDate = addMonthsISO(task.date, 1);
+            }
+
+            // Determine the source ID for deduplication
+            const sourceId = task.recurrenceSourceId || task.id;
+
+            // Check if a task already exists on the target date from the same source
+            const alreadyExists = state.tasks.some(
+              (t) =>
+                t.date === nextDate &&
+                (t.id === sourceId ||
+                  t.recurrenceSourceId === sourceId ||
+                  t.recurrenceSourceId === task.id ||
+                  t.id === task.id)
+            );
+
+            // Also check in the newTasks we just built in this batch
+            const alreadyInBatch = newTasks.some(
+              (t) => t.date === nextDate && t.recurrenceSourceId === sourceId
+            );
+
+            if (alreadyExists || alreadyInBatch) return;
+
+            const newTask: Task = {
+              ...task,
+              id: newId("task"),
+              date: nextDate,
+              status: "ikke begynt",
+              recurrenceSourceId: sourceId,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            };
+
+            newTasks.push(newTask);
+          });
+
+          generatedCount = newTasks.length;
+
+          if (generatedCount === 0) return {};
+
+          return { tasks: [...state.tasks, ...newTasks] };
+        });
+
+        return generatedCount;
+      }
     }),
     {
       name: "jobbkalender-store",

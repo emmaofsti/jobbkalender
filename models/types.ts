@@ -1,5 +1,6 @@
 export type Status = "ikke begynt" | "gjort" | "holder på" | "står ikke på meg" | "ferdig";
 export type Priority = "Lav" | "Medium" | "Høy";
+export type RecurrenceType = "none" | "daily" | "weekly" | "monthly";
 
 export type Customer = {
   id: string;
@@ -25,6 +26,8 @@ export type Task = {
   blockedNote?: string;
   blockedNow?: boolean;
   location?: string;
+  recurrence?: RecurrenceType;
+  recurrenceSourceId?: string;
   createdAt: string;
   updatedAt: string;
 };

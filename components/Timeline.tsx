@@ -53,16 +53,20 @@ export default function Timeline({
         <div className="text-xs text-muted">08:00–18:00</div>
       </div>
       <div className="relative grid grid-cols-[80px_1fr] gap-4">
-        <div className="space-y-6">
+        <div>
           {hours.map((hour) => (
-            <div key={hour} className="text-xs text-muted">
+            <div
+              key={hour}
+              className="text-xs text-muted flex items-start"
+              style={{ height: hourHeight }}
+            >
               {String(hour).padStart(2, "0")}:00
             </div>
           ))}
         </div>
         <div className="relative" style={{ height: hourHeight * (endHour - startHour) }}>
           <div className="absolute inset-0 flex flex-col">
-            {hours.slice(0, -1).map((hour) => (
+            {hours.map((hour) => (
               <div
                 key={hour}
                 className="border-t border-dashed border-border"

@@ -6,7 +6,6 @@ import AppShell from "@/components/AppShell";
 import TaskQuickCreate from "@/components/TaskQuickCreate";
 import Timeline from "@/components/Timeline";
 import TaskCard from "@/components/TaskCard";
-import TaskDetailsPanel from "@/components/TaskDetailsPanel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +36,7 @@ export default function DayView() {
   const setSelectedDate = useAppStore((state) => state.setSelectedDate);
   const selectedTaskId = useAppStore((state) => state.selectedTaskId);
   const setSelectedTaskId = useAppStore((state) => state.setSelectedTaskId);
+  const setEditingTaskId = useAppStore((state) => state.setEditingTaskId);
   const updateTask = useAppStore((state) => state.updateTask);
   const copyPlanToTomorrow = useAppStore((state) => state.copyPlanToTomorrow);
   const clearTasks = useAppStore((state) => state.clearTasks);
@@ -44,7 +44,6 @@ export default function DayView() {
   const [googleAllDay, setGoogleAllDay] = useState<CalendarEvent[]>([]);
   const [googleConnected, setGoogleConnected] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const detailsRef = useRef<HTMLDivElement>(null);
 
   const tasksForDate = useMemo(
     () => tasks.filter((task) => task.date === selectedDate),
@@ -133,9 +132,7 @@ export default function DayView() {
 
   const handleSelectTask = (taskId: string) => {
     setSelectedTaskId(taskId);
-    requestAnimationFrame(() => {
-      detailsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
+    setEditingTaskId(taskId);
   };
 
   return (
@@ -196,7 +193,7 @@ export default function DayView() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Uten tid i dag</CardTitle>
+                <CardTitle>Oppgaver i dag</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {googleAllDay.length > 0 ? (
@@ -216,20 +213,39 @@ export default function DayView() {
                     ))}
                   </div>
                 ) : null}
-                {backlogTasks.length === 0 ? (
-                  <p className="text-sm text-muted">Alt med tid. Ingen løse ender.</p>
-                ) : (
-                  backlogTasks.map((task) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      customer={customers.find((c) => c.id === task.customerId)}
-                      selected={task.id === selectedTaskId}
-                      onSelect={handleSelectTask}
-                      onStatusClick={handleCycleStatus}
-                    />
-                  ))
-                )}
+                {tasksWithTime.length > 0 ? (
+                  <div className="space-y-2">
+                    <div className="text-xs uppercase tracking-[0.2em] text-muted">Med tid</div>
+                    {tasksWithTime.map((task) => (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        customer={customers.find((c) => c.id === task.customerId)}
+                        selected={task.id === selectedTaskId}
+                        onSelect={handleSelectTask}
+                        onStatusClick={handleCycleStatus}
+                      />
+                    ))}
+                  </div>
+                ) : null}
+                {backlogTasks.length > 0 ? (
+                  <div className="space-y-2">
+                    <div className="text-xs uppercase tracking-[0.2em] text-muted">Uten tid</div>
+                    {backlogTasks.map((task) => (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        customer={customers.find((c) => c.id === task.customerId)}
+                        selected={task.id === selectedTaskId}
+                        onSelect={handleSelectTask}
+                        onStatusClick={handleCycleStatus}
+                      />
+                    ))}
+                  </div>
+                ) : null}
+                {tasksWithTime.length === 0 && backlogTasks.length === 0 ? (
+                  <p className="text-sm text-muted">Ingen oppgaver i dag.</p>
+                ) : null}
                 {notOnMeTasks.length > 0 ? (
                   <div className="mt-4 space-y-3">
                     <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted">
@@ -258,10 +274,6 @@ export default function DayView() {
                 1=ikke begynt, 2=holder på, 3=står ikke på meg, 4=ferdig
               </CardContent>
             </Card>
-
-            <div ref={detailsRef}>
-              <TaskDetailsPanel />
-            </div>
           </div>
         </div>
       </div>

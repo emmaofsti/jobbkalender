@@ -37,3 +37,9 @@ export function isInSameWeek(dateIso: string, anchorIso: string) {
   const end = addDays(start, 6);
   return isWithinInterval(parseISO(dateIso), { start, end });
 }
+
+export function addMonthsISO(dateIso: string, amount: number) {
+  const date = parseISO(dateIso);
+  date.setMonth(date.getMonth() + amount);
+  return format(date, "yyyy-MM-dd");
+}

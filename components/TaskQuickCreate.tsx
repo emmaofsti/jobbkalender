@@ -9,7 +9,8 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Priority, Status } from "@/models/types";
+import { Priority, Status, RecurrenceType } from "@/models/types";
+import RecurrenceSelector from "@/components/RecurrenceSelector";
 
 const priorities: Priority[] = ["Lav", "Medium", "Høy"];
 const statuses: Status[] = ["ikke begynt", "gjort", "holder på", "står ikke på meg", "ferdig"];
@@ -27,6 +28,7 @@ export default function TaskQuickCreate() {
   const [status, setStatus] = useState<Status>("ikke begynt");
   const [priority, setPriority] = useState<Priority>("Medium");
   const [note, setNote] = useState("");
+  const [recurrence, setRecurrence] = useState<RecurrenceType>("none");
   const [error, setError] = useState<string | null>(null);
 
   const canSubmit = useMemo(() => title.trim() && customerId, [title, customerId]);
@@ -50,12 +52,23 @@ export default function TaskQuickCreate() {
       endTime: endTime || undefined,
       status,
       priority,
-      note: note.trim() || undefined
+      note: note.trim() || undefined,
+      recurrence
     });
+
+    // Immediately generate next recurring task if recurrence is set
+    if (recurrence !== "none") {
+      setTimeout(() => {
+        useAppStore.getState().generateRecurringTasks();
+        console.log("[TaskQuickCreate] Generated recurring task immediately");
+      }, 100);
+    }
+
     setTitle("");
     setStartTime("");
     setEndTime("");
     setNote("");
+    setRecurrence("none");
     setDate(resolvedDate);
   };
 
@@ -113,6 +126,10 @@ export default function TaskQuickCreate() {
               ))}
             </Select>
           </div>
+        </div>
+        <div className="space-y-2">
+          <Label>Gjentagelse</Label>
+          <RecurrenceSelector value={recurrence} onChange={setRecurrence} />
         </div>
         <div className="space-y-2">
           <Label>Notat</Label>

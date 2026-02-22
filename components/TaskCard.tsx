@@ -1,12 +1,13 @@
 "use client";
 
-import { Clock, MapPin } from "lucide-react";
+import { Clock, MapPin, Repeat } from "lucide-react";
 import { Customer, Task } from "@/models/types";
 import { cn } from "@/utils/cn";
 import StatusBadge from "@/components/StatusBadge";
 import PriorityBadge from "@/components/PriorityBadge";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import RecurrenceButton from "@/components/RecurrenceButton";
 
 export default function TaskCard({
   task,
@@ -54,19 +55,29 @@ export default function TaskCard({
                 {task.location}
               </div>
             ) : null}
+            {task.recurrence && task.recurrence !== "none" ? (
+              <div className="flex items-center gap-1 text-xs text-accent">
+                <Repeat className="h-3.5 w-3.5" />
+                {task.recurrence === "daily" && "Daglig"}
+                {task.recurrence === "weekly" && "Ukentlig"}
+                {task.recurrence === "monthly" && "Månedlig"}
+              </div>
+            ) : null}
           </div>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(event) => {
-              event.stopPropagation();
-              onStatusClick?.(task.id);
-            }}
-          >
-            <StatusBadge status={task.status} muted={muted} />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(event) => {
+                event.stopPropagation();
+                onStatusClick?.(task.id);
+              }}
+            >
+              <StatusBadge status={task.status} muted={muted} />
+            </Button>
+          </div>
           {!compact ? <PriorityBadge priority={task.priority} /> : null}
           {task.blockedNow ? <Badge variant="danger">Blokkert</Badge> : null}
         </div>

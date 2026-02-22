@@ -21,14 +21,14 @@ function removeSegment(text: string, segment: string) {
 function findCustomerMatch(text: string, customers: Customer[]) {
   const lowered = text.toLowerCase();
   let best: { id: string; name: string } | null = null;
-  customers.forEach((customer) => {
+  for (const customer of customers) {
     const name = customer.name.toLowerCase();
     if (lowered.includes(name)) {
       if (!best || name.length > best.name.length) {
         best = { id: customer.id, name: customer.name };
       }
     }
-  });
+  }
   return best;
 }
 
